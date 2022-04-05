@@ -19,7 +19,6 @@ public class UIHandler : MonoBehaviour
     private float AccelerationForce = 800;
     private float DragCoeficient = 0;
     private float DragSize;
-    private float launchVelocity = 1f;
 
     private bool launched = false;
 
@@ -79,13 +78,12 @@ public class UIHandler : MonoBehaviour
     }
 
 
-    public void UpdateDragSize()
+    public void UpdateDragSize(Vector3 launchVector)
     {
         float fluidDensity = (densityField.text != "") ? float.Parse(densityField.text) : 0f;
         float ballSurfaceArea = 4 * Mathf.PI * (Mathf.Pow(15, 2)); // Diameter of the ball is 30cm, radius is 15cm
 
-        DragSize = 0.5f * fluidDensity * ballSurfaceArea * Mathf.Pow(launchVelocity, 2) * DragCoeficient;
-        Debug.Log(DragSize);
+        DragSize = 0.5f * fluidDensity * ballSurfaceArea * Mathf.Pow(launchVector.magnitude, 2) * DragCoeficient;
     }
 
 
@@ -99,21 +97,28 @@ public class UIHandler : MonoBehaviour
         angleField.enabled = false;
         float xcomponent = Mathf.Cos(angleSlider.value * Mathf.PI / 180) * AccelerationForce;
         float ycomponent = Mathf.Sin(angleSlider.value * Mathf.PI / 180) * AccelerationForce;
+        Vector3 launchAngleVector = new Vector3(0f, Mathf.Sin(angleSlider.value * Mathf.PI / 180), Mathf.Cos(angleSlider.value * Mathf.PI / 180)); // Vector for drag size
 
         //Vector3 launchAngle = ball.transform.eulerAngles * 200f;
-        Vector3 launchAngle = new Vector3(0f, ycomponent, xcomponent);
+        Vector3 launchAngle = new Vector3(0f, ycomponent, xcomponent); // x component in z location to account for camera position
         Debug.Log("Velocity Vector:   " + launchAngle);
         Debug.Log("Acceleration:   " + AccelerationForce);
 
-        UpdateDragSize(); // DragSize = (1/2) * density * area * (v^2) * drag coefficient
+        UpdateDragSize(launchAngleVector); // DragSize = (1/2) * density * area * (v^2) * drag coefficient
 
         //drag
         //float dragForce = DragCoeficient * ballRigidBody.mass * Mathf.Pow(launchAngle.magnitude, 2);
         Vector3 dragVector = DragSize * -launchAngle.normalized;
 
-        Debug.Log("Drag Vector:   " + dragVector);
-
-        ballRigidBody.AddForce(dragVector);
+        if (-dragVector.y > launchAngle.y || -dragVector.z > launchAngle.z)
+        {
+            ballRigidBody.AddForce(-launchAngle);
+            Debug.Log("Drag Vector:   " + -launchAngle);
+        } else
+        {
+            ballRigidBody.AddForce(dragVector);
+            Debug.Log("Drag Vector:   " + dragVector);
+        }
         ballRigidBody.AddForce(launchAngle);
     }
 }
