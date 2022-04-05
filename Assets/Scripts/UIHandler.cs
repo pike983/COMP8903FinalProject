@@ -19,6 +19,7 @@ public class UIHandler : MonoBehaviour
     private float AccelerationForce = 800;
     private float DragCoeficient = 0;
     private float DragSize;
+    private float launchVelocity = 1f;
 
     private bool launched = false;
 
@@ -82,9 +83,9 @@ public class UIHandler : MonoBehaviour
     {
         float fluidDensity = (densityField.text != "") ? float.Parse(densityField.text) : 0f;
         float ballSurfaceArea = 4 * Mathf.PI * (Mathf.Pow(15, 2)); // Diameter of the ball is 30cm, radius is 15cm
-        float launchVelocity = 1f; // launchVector.magnitude; // The launch velocity
 
         DragSize = 0.5f * fluidDensity * ballSurfaceArea * Mathf.Pow(launchVelocity, 2) * DragCoeficient;
+        Debug.Log(DragSize);
     }
 
 
@@ -104,7 +105,7 @@ public class UIHandler : MonoBehaviour
         Debug.Log("Velocity Vector:   " + launchAngle);
         Debug.Log("Acceleration:   " + AccelerationForce);
 
-        UpdateDragSize();
+        UpdateDragSize(); // DragSize = (1/2) * density * area * (v^2) * drag coefficient
 
         //drag
         //float dragForce = DragCoeficient * ballRigidBody.mass * Mathf.Pow(launchAngle.magnitude, 2);
